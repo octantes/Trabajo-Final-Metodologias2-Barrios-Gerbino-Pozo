@@ -75,3 +75,14 @@ Para mitigar la deuda técnica detectada, se definieron las siguientes directric
 4. **Manejo de Errores:**
    * Eliminar retornos silenciosos y el uso de `pass`.
    * Implementar excepciones personalizadas (`SolicitudNoEncontradaError`, `TransicionInvalidaError`) para abortar flujos inválidos inmediatamente.
+
+## Etapa 5: Refactoring Seguro Aplicado
+
+Se aplicaron 4 técnicas de refactoring documentadas sobre `sistema.py` para erradicar la deuda técnica, conservando intacto el comportamiento externo:
+
+1. **Extract Method:** Se extrajo la lógica repetida de búsqueda de trámites hacia el método privado `_buscar_por_id()`, eliminando la duplicación en `asignar_responsable` y `cambiar_estado`.
+2. **Move Method:** Se reubicó el método `generar_reporte()` desde la clase `GestorSolicitudes` hacia la nueva clase `GeneradorReportes`, cumpliendo con el principio SRP.
+3. **Replace Dictionary with Object:** Se creó la clase `Solicitud` para instanciar objetos de dominio en `registrar_solicitud`, eliminando la obsesión por primitivos (diccionarios).
+4. **Replace Magic Literal with Constant:** Se implementó el Enum `EstadoSolicitud` para tipar los estados, y un diccionario interno de `_transiciones_permitidas` que eliminó los múltiples `if-elif` anidados.
+
+*(Las capturas del "Antes y Después" se encuentran detalladas en el Informe PDF)*.

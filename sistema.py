@@ -1,64 +1,79 @@
+from enum import Enum
+
+# Reemplazo de magic strings por un enum
+class EstadoSolicitud(Enum):
+    PENDIENTE = "PENDIENTE"
+    EN_TRAMITE = "EN_TRAMITE"
+    RESUELTO = "RESUELTO"
+    RECHAZADO = "RECHAZADO"
+
+# Excepciones personalizadas 
+class SolicitudNoEncontradaError(Exception): pass
+class TransicionInvalidaError(Exception): pass
+
+# 2. Entidad de dominio
+class Solicitud:
+    def __init__(self, id_sol, nombre_estudiante, legajo, tipo_tramite, motivo):
+        self.id = id_sol
+        self.estudiante_nom = nombre_estudiante
+        self.estudiante_leg = legajo
+        self.tipo = tipo_tramite
+        self.motivo = motivo
+        self.estado = EstadoSolicitud.PENDIENTE
+        self.responsable = ""
+
+        # OCP: Mapa de transiciones permitidas
+        self._transiciones_permitidas = {
+            EstadoSolicitud.PENDIENTE: [EstadoSolicitud.EN_TRAMITE, EstadoSolicitud.RECHAZADO],
+            EstadoSolicitud.EN_TRAMITE: [EstadoSolicitud.RESUELTO]
+        }
+
+    def cambiar_estado(self, nuevo_estado: EstadoSolicitud):
+        if nuevo_estado in self._transiciones_permitidas.get(self.estado, []):
+            self.estado = nuevo_estado
+        else:
+            raise TransicionInvalidaError(f"Transicion no valida de {self.estado.name} a {nuevo_estado.name}")
+
+# 3. Delegación de responsabilidad SRP
+class GeneradorReportes:
+    @staticmethod
+    def imprimir_reporte(solicitudes):
+        print("\n--- REPORTE DE SOLICITUDES ---")
+        for req in solicitudes:
+            print(f"ID: {req.id} | Alumno: {req.estudiante_nom} | Tramite: {req.tipo} | Estado: {req.estado.value} | Resp: {req.responsable}")
+        print("-----------------------------------------\n")
+
 class GestorSolicitudes:
-    """
-    Sistema base con Large Class y violacion de SRP
-    Esta clase hace de base de datos, valida, procesa logica de negocio e imprime reportes
-    """
     def __init__(self):
-        self.lista_sol = [] # mal nombre de variable
+        self.solicitudes = []
     
-    # long parameter list (demasiados parametros)
     def registrar_solicitud(self, id_sol, nombre_estudiante, legajo, tipo_tramite, motivo):
-        try:
-            # obsesion por primitivos: todo se guarda en diccionario en lugar de objetos
-            s = {
-                "id": id_sol,
-                "estudiante_nom": nombre_estudiante,
-                "estudiante_leg": legajo,
-                "tipo": tipo_tramite,
-                "motivo": motivo,
-                "estado": "PENDIENTE", # strings hardcodeados
-                "responsable": ""
-            }
-            self.lista_sol.append(s)
-            return True
-        except Exception:
-            # silencio de errores: catch vacío
-            pass 
+        # Ahora usamos la clase Solicitud en lugar de un diccionario
+        nueva_solicitud = Solicitud(id_sol, nombre_estudiante, legajo, tipo_tramite, motivo)
+        self.solicitudes.append(nueva_solicitud)
+        return True
+
+    # 4. Extract method 
+    def _buscar_por_id(self, id_sol) -> Solicitud:
+        for req in self.solicitudes:
+            if req.id == id_sol:
+                return req
+        raise SolicitudNoEncontradaError(f"No se encontro la solicitud ID {id_sol}")
 
     def asignar_responsable(self, id_sol, responsable):
-        # codigo duplicado: logica de buscar por id repetida en cada funcion
-        encontrado = False
-        for req in self.lista_sol:
-            if req["id"] == id_sol:
-                req["responsable"] = responsable
-                encontrado = True
-                print("responsable asignado con exito")
-        
-        # mal manejo de errores: retorna -1 en lugar de excepcion
-        if not encontrado:
-            return -1 
+        solicitud = self._buscar_por_id(id_sol)
+        solicitud.responsable = responsable
+        print("responsable asignado con exito")
 
-    # metodo largo y estructuras de control rigidas (violacion de OCP)
-    def cambiar_estado(self, id_sol, nuevo_estado):
-        for req in self.lista_sol:
-            if req["id"] == id_sol:
-                if req["estado"] == "PENDIENTE":
-                    if nuevo_estado == "EN_TRAMITE" or nuevo_estado == "RECHAZADO":
-                        req["estado"] = nuevo_estado
-                    else:
-                        print("transicion no valida")
-                elif req["estado"] == "EN_TRAMITE":
-                    if nuevo_estado == "RESUELTO":
-                        req["estado"] = nuevo_estado
-                    else:
-                        print("transicion no valida")
-                elif req["estado"] == "RESUELTO":
-                    print("el tramite ya se encuentra cerrado")
-                return True
-        return False
+    def cambiar_estado(self, id_sol, estado_str):
+        solicitud = self._buscar_por_id(id_sol)
+        try:
+            nuevo_estado = EstadoSolicitud(estado_str)
+            solicitud.cambiar_estado(nuevo_estado)
+            return True
+        except ValueError:
+            print("Estado inexistente")
+            return False
 
     def generar_reporte(self):
-        print("\n--- REPORTE DE SOLICITUDES ---")
-        for req in self.lista_sol:
-            print(f"ID: {req['id']} | Alumno: {req['estudiante_nom']} | Tramite: {req['tipo']} | Estado: {req['estado']} | Resp: {req['responsable']}")
-        print("-----------------------------------------\n")
+        GeneradorReportes.imprimir_reporte(self.solicitudes)
