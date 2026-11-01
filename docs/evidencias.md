@@ -86,3 +86,15 @@ Se aplicaron 4 técnicas de refactoring documentadas sobre `sistema.py` para err
 4. **Replace Magic Literal with Constant:** Se implementó el Enum `EstadoSolicitud` para tipar los estados, y un diccionario interno de `_transiciones_permitidas` que eliminó los múltiples `if-elif` anidados.
 
 *(Las capturas del "Antes y Después" se encuentran detalladas en el Informe PDF)*.
+
+## Etapa 6: Pruebas y Verificación del Comportamiento
+
+Para garantizar la estabilidad funcional y comprobar que las modificaciones de la Etapa 5 fueron seguras, se desarrollo una suite de pruebas unitarias utilizando `unittest`.
+
+Se validaron los siguientes escenarios:
+- [x] **Camino Feliz:** Registro de solicitud con valores iniciales correctos.
+- [x] **Flujo Operativo:** Asignación de responsable y transición válida de estados ("PENDIENTE" a "EN_TRAMITE").
+- [x] **Protección de Dominio:** Verificación de lanzamiento de excepción `SolicitudNoEncontradaError` ante IDs inexistentes.
+- [x] **Reglas de Negocio (OCP):** Comprobación de bloqueo y lanzamiento de `TransicionInvalidaError` al intentar un cambio de estado no contemplado.
+
+Todas las pruebas ejecutaron satisfactoriamente, confirmando que la calidad externa del sistema se mantuvo intacta y predecible.
