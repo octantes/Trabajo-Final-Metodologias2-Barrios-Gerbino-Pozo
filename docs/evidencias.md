@@ -57,3 +57,21 @@ Al analizar la version base del sistema, se identificaron 8 problemas tecnicos q
    * Impacto: Afecta la legibilidad y comprension del codigo.
    * Riesgo: Bajo. 
    * Prioridad: Baja.
+
+
+## Etapa 4: Decisiones de Diseño (SOLID y Clean Code)
+
+Para mitigar la deuda técnica detectada, se definieron las siguientes directrices de reestructuración arquitectónica:
+
+1. **Aplicación de SRP:**
+   * Desacoplar `GestorSolicitudes`. Se extraerá la impresión por consola a una nueva clase `GeneradorReportes`.
+   * Crear la entidad de dominio `Solicitud` para encapsular la estructura de los datos, eliminando la obsesión por primitivos.
+2. **Aplicación de OCP:**
+   * Eliminar las estructuras `if-elif` anidadas en las transiciones de estado.
+   * Delegar la validación de transiciones a la propia clase `Solicitud` mediante un mapeo de estados permitidos.
+3. **Clean Code:**
+   * Implementar `Enum` (`EstadoSolicitud`) para reemplazar las cadenas de texto hardcodeadas.
+   * Renombrar variables (`lista_sol` -> `solicitudes`, `req` -> `solicitud`) para que reflejen el lenguaje del negocio.
+4. **Manejo de Errores:**
+   * Eliminar retornos silenciosos y el uso de `pass`.
+   * Implementar excepciones personalizadas (`SolicitudNoEncontradaError`, `TransicionInvalidaError`) para abortar flujos inválidos inmediatamente.
