@@ -12,6 +12,8 @@ class TestGestorSolicitudes(unittest.TestCase):
         solicitud = self.gestor.solicitudes[0]
         self.assertEqual(solicitud.id, 1)
         self.assertEqual(solicitud.estado, EstadoSolicitud.PENDIENTE)
+        self.assertEqual(solicitud.estudiante.nombre, "Ana Gomez")
+        self.assertEqual(solicitud.estudiante.legajo, "12345")
 
     def test_asignacion_responsable(self):
         # Verifica la asignación de responsable

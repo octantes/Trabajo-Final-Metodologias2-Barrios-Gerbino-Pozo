@@ -1,4 +1,5 @@
 from enum import Enum
+from dataclasses import dataclass
 
 # Reemplazo de magic strings por un enum
 class EstadoSolicitud(Enum):
@@ -14,16 +15,22 @@ class Prioridad(Enum):
     ALTA = "ALTA"
 
 
+@dataclass(frozen=True)
+class Estudiante:
+    # se guarda aparte
+    nombre: str
+    legajo: str
+
+
 # Excepciones personalizadas 
 class SolicitudNoEncontradaError(Exception): pass
 class TransicionInvalidaError(Exception): pass
 
 # 2. Entidad de dominio
 class Solicitud:
-    def __init__(self, id_sol, nombre_estudiante, legajo, tipo_tramite, motivo):
+    def __init__(self, id_sol, estudiante, tipo_tramite, motivo):
         self.id = id_sol
-        self.estudiante_nom = nombre_estudiante
-        self.estudiante_leg = legajo
+        self.estudiante = estudiante
         self.tipo = tipo_tramite
         self.motivo = motivo
         self.estado = EstadoSolicitud.PENDIENTE
@@ -54,7 +61,7 @@ class GeneradorReportes:
     def imprimir_reporte(solicitudes):
         print("\n--- REPORTE DE SOLICITUDES ---")
         for req in solicitudes:
-            print(f"ID: {req.id} | Alumno: {req.estudiante_nom} | Tramite: {req.tipo} | Prioridad: {req.prioridad.value} | Estado: {req.estado.value} | Resp: {req.responsable}")
+            print(f"ID: {req.id} | Alumno: {req.estudiante.nombre} | Legajo: {req.estudiante.legajo} | Tramite: {req.tipo} | Prioridad: {req.prioridad.value} | Estado: {req.estado.value} | Resp: {req.responsable}")
         print("-----------------------------------------\n")
 
 class GestorSolicitudes:
@@ -62,8 +69,8 @@ class GestorSolicitudes:
         self.solicitudes = []
     
     def registrar_solicitud(self, id_sol, nombre_estudiante, legajo, tipo_tramite, motivo):
-        # Ahora usamos la clase Solicitud en lugar de un diccionario
-        nueva_solicitud = Solicitud(id_sol, nombre_estudiante, legajo, tipo_tramite, motivo)
+        estudiante = Estudiante(nombre_estudiante, legajo)
+        nueva_solicitud = Solicitud(id_sol, estudiante, tipo_tramite, motivo)
         self.solicitudes.append(nueva_solicitud)
         return True
 
