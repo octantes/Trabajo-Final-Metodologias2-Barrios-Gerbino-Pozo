@@ -1,5 +1,5 @@
 import unittest
-from sistema import GestorSolicitudes, EstadoSolicitud, SolicitudNoEncontradaError, TransicionInvalidaError
+from sistema import GestorSolicitudes, EstadoSolicitud, Prioridad, SolicitudNoEncontradaError, TransicionInvalidaError
 
 class TestGestorSolicitudes(unittest.TestCase):
     def setUp(self):
@@ -17,6 +17,11 @@ class TestGestorSolicitudes(unittest.TestCase):
         # Verifica la asignación de responsable
         self.gestor.asignar_responsable(1, "Secretaria Academica")
         self.assertEqual(self.gestor.solicitudes[0].responsable, "Secretaria Academica")
+
+    def test_cambiar_prioridad(self):
+        self.assertEqual(self.gestor.solicitudes[0].prioridad, Prioridad.MEDIA)
+        self.gestor.cambiar_prioridad(1, Prioridad.ALTA)
+        self.assertEqual(self.gestor.solicitudes[0].prioridad, Prioridad.ALTA)
 
     def test_transicion_estado_valida(self):
         # Verifica el camino feliz de cambio de estado

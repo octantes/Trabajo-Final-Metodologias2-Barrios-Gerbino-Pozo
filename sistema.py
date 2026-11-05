@@ -7,6 +7,13 @@ class EstadoSolicitud(Enum):
     RESUELTO = "RESUELTO"
     RECHAZADO = "RECHAZADO"
 
+
+class Prioridad(Enum):
+    BAJA = "BAJA"
+    MEDIA = "MEDIA"
+    ALTA = "ALTA"
+
+
 # Excepciones personalizadas 
 class SolicitudNoEncontradaError(Exception): pass
 class TransicionInvalidaError(Exception): pass
@@ -20,6 +27,8 @@ class Solicitud:
         self.tipo = tipo_tramite
         self.motivo = motivo
         self.estado = EstadoSolicitud.PENDIENTE
+        # se suma este dato
+        self.prioridad = Prioridad.MEDIA
         self.responsable = ""
 
         # OCP: Mapa de transiciones permitidas
@@ -34,13 +43,18 @@ class Solicitud:
         else:
             raise TransicionInvalidaError(f"Transicion no valida de {self.estado.name} a {nuevo_estado.name}")
 
+    def cambiar_prioridad(self, nueva_prioridad: Prioridad):
+        if not isinstance(nueva_prioridad, Prioridad):
+            raise TypeError("La prioridad debe ser de tipo Prioridad")
+        self.prioridad = nueva_prioridad
+
 # 3. Delegación de responsabilidad SRP
 class GeneradorReportes:
     @staticmethod
     def imprimir_reporte(solicitudes):
         print("\n--- REPORTE DE SOLICITUDES ---")
         for req in solicitudes:
-            print(f"ID: {req.id} | Alumno: {req.estudiante_nom} | Tramite: {req.tipo} | Estado: {req.estado.value} | Resp: {req.responsable}")
+            print(f"ID: {req.id} | Alumno: {req.estudiante_nom} | Tramite: {req.tipo} | Prioridad: {req.prioridad.value} | Estado: {req.estado.value} | Resp: {req.responsable}")
         print("-----------------------------------------\n")
 
 class GestorSolicitudes:
@@ -74,6 +88,10 @@ class GestorSolicitudes:
         except ValueError:
             print("Estado inexistente")
             return False
+
+    def cambiar_prioridad(self, id_sol, nueva_prioridad: Prioridad):
+        solicitud = self._buscar_por_id(id_sol)
+        solicitud.cambiar_prioridad(nueva_prioridad)
 
     def generar_reporte(self):
         GeneradorReportes.imprimir_reporte(self.solicitudes)

@@ -1,4 +1,4 @@
-from sistema import GestorSolicitudes
+from sistema import GestorSolicitudes, Prioridad
 
 if __name__ == "__main__":
 
@@ -11,6 +11,7 @@ if __name__ == "__main__":
 
     # 3 - asignamos responsables 
     gestor.asignar_responsable(1, "Secretaria Academica")
+    gestor.cambiar_prioridad(2, Prioridad.ALTA)
     
     # 4 - cambiamos estados
     gestor.cambiar_estado(1, "EN_TRAMITE")
