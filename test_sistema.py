@@ -1,5 +1,14 @@
 import unittest
-from sistema import DatosNuevaSolicitud, Estudiante, GestorSolicitudes, EstadoSolicitud, Prioridad, SolicitudNoEncontradaError, TransicionInvalidaError
+from sistema import (
+    DatosNuevaSolicitud,
+    EstadoInvalidoError,
+    EstadoSolicitud,
+    Estudiante,
+    GestorSolicitudes,
+    Prioridad,
+    SolicitudNoEncontradaError,
+    TransicionInvalidaError,
+)
 
 class TestGestorSolicitudes(unittest.TestCase):
     def setUp(self):
@@ -42,6 +51,21 @@ class TestGestorSolicitudes(unittest.TestCase):
         with self.assertRaises(TransicionInvalidaError):
             # No se puede pasar de PENDIENTE a RESUELTO directamente
             self.gestor.cambiar_estado(1, "RESUELTO")
+
+    def test_estado_inexistente(self):
+        # Un estado que no pertenece al Enum debe fallar de forma explicita
+        with self.assertRaises(EstadoInvalidoError):
+            self.gestor.cambiar_estado(1, "APROBADO")
+
+    def test_transicion_estado_con_enum(self):
+        # El gestor tambien debe aceptar el Enum directamente
+        self.gestor.cambiar_estado(1, EstadoSolicitud.EN_TRAMITE)
+        self.assertEqual(self.gestor.obtener_solicitud(1).estado, EstadoSolicitud.EN_TRAMITE)
+
+    def test_solicitud_rechaza_estado_no_enum(self):
+        # La entidad de dominio no debe aceptar strings sueltos
+        with self.assertRaises(EstadoInvalidoError):
+            self.gestor.obtener_solicitud(1).cambiar_estado("EN_TRAMITE")
 
     def test_buscar_id_inexistente(self):
         # Verifica que lanzar error al buscar ID falso funcione

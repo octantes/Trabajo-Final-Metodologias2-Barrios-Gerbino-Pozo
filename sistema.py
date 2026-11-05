@@ -35,6 +35,7 @@ class DatosNuevaSolicitud:
 # Excepciones personalizadas 
 class SolicitudNoEncontradaError(Exception): pass
 class TransicionInvalidaError(Exception): pass
+class EstadoInvalidoError(Exception): pass
 
 # 2. Entidad de dominio
 class Solicitud:
@@ -55,6 +56,8 @@ class Solicitud:
         }
 
     def cambiar_estado(self, nuevo_estado: EstadoSolicitud):
+        if not isinstance(nuevo_estado, EstadoSolicitud):
+            raise EstadoInvalidoError(f"Estado invalido: {nuevo_estado!r}")
         if nuevo_estado in self._transiciones_permitidas.get(self.estado, []):
             self.estado = nuevo_estado
         else:
@@ -113,15 +116,18 @@ class GestorSolicitudes:
         solicitud.responsable = responsable
         print("responsable asignado con exito")
 
-    def cambiar_estado(self, id_sol, estado_str):
+    def cambiar_estado(self, id_sol, estado: EstadoSolicitud | str):
         solicitud = self.obtener_solicitud(id_sol)
-        try:
-            nuevo_estado = EstadoSolicitud(estado_str)
-            solicitud.cambiar_estado(nuevo_estado)
-            return True
-        except ValueError:
-            print("Estado inexistente")
-            return False
+        if isinstance(estado, str):
+            try:
+                nuevo_estado = EstadoSolicitud(estado)
+            except ValueError as exc:
+                raise EstadoInvalidoError(f"Estado inexistente: {estado}") from exc
+        elif isinstance(estado, EstadoSolicitud):
+            nuevo_estado = estado
+        else:
+            raise EstadoInvalidoError(f"Estado invalido: {estado!r}")
+        solicitud.cambiar_estado(nuevo_estado)
 
     def cambiar_prioridad(self, id_sol, nueva_prioridad: Prioridad):
         solicitud = self.obtener_solicitud(id_sol)
