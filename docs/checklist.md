@@ -31,7 +31,7 @@ EXIT=0
 | Duplicados | No se admiten IDs repetidos | ✅ | `RepositorioSolicitudes.agregar` lanza `SolicitudDuplicadaError`. |
 | Duplicación | La búsqueda por ID no está repetida | ✅ | Está centralizada en `obtener_por_id`. |
 | Pruebas | Los flujos principales y de error están cubiertos | ✅ | 19 pruebas pasan: caminos felices, transiciones válidas e inválidas, estados terminales, duplicados, datos inválidos y salida del reporte. |
-| Documentación | README, evidencias y decisiones están actualizados | ✅ | README, `evidencias.md`, este checklist y `conclusiones.md` describen el estado final. |
+| Documentación | README, evidencias y decisiones están actualizados | ✅ | README, `evidencias.md` y este checklist describen el estado final. |
 | Git | Historial de commits claro y ordenado | ✅ | Los cambios están agrupados por etapa y los commits describen la intención de cada uno. |
 | Datos | No se usan datos personales reales | ✅ | Los ejemplos usan nombres y legajos sintéticos. |
 | Complejidad | El módulo es legible y de bajo acoplamiento | ✅ | `sistema.py` tiene 158 líneas y responsabilidades separadas. |

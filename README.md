@@ -41,7 +41,7 @@ python3 main.py
 python3 -m unittest -v
 ```
 
-Suite actual: 12 pruebas unitarias.
+Suite actual: 19 pruebas unitarias.
 
 ## Funcionalidades
 
@@ -58,14 +58,13 @@ Suite actual: 12 pruebas unitarias.
 sistema.py        Modelo de dominio, repositorio, reportes y gestor
 main.py           Demostración ejecutable
 test_sistema.py   Pruebas unitarias
-docs/             Evidencias, checklist de code review y conclusiones
+docs/             Evidencias y checklist de code review
 ```
 
 ## Documentación
 
 - [Evidencias y decisiones técnicas](docs/evidencias.md)
 - [Checklist de code review](docs/checklist.md)
-- [Conclusiones y mejoras futuras](docs/conclusiones.md)
 
 ## Tags
 

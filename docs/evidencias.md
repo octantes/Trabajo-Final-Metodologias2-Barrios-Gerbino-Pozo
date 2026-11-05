@@ -97,7 +97,7 @@ Se aplicaron las siguientes técnicas de refactoring documentadas sobre `sistema
 
 Para garantizar la estabilidad funcional y comprobar que las modificaciones de la Etapa 5 fueron seguras, se desarrolló una suite de pruebas unitarias utilizando `unittest`.
 
-Se validaron los siguientes escenarios (12 pruebas):
+Se validaron los siguientes escenarios (19 pruebas):
 - [x] **Camino Feliz:** Registro de solicitud con valores iniciales correctos.
 - [x] **Flujo Operativo:** Asignación de responsable, cambio de prioridad y transición válida de estados (`PENDIENTE` a `EN_TRAMITE`).
 - [x] **Protección de Dominio:** `SolicitudNoEncontradaError` ante IDs inexistentes.
@@ -106,12 +106,13 @@ Se validaron los siguientes escenarios (12 pruebas):
 - [x] **Aceptación del Enum:** `cambiar_estado` acepta `EstadoSolicitud` además de strings.
 - [x] **Validación de datos:** `DatosInvalidosError` ante ID inválido y campos de texto vacíos (nombre, legajo, tipo y motivo).
 - [x] **Duplicados:** `SolicitudDuplicadaError` al registrar un ID existente.
+- [x] **Casos complementarios:** transiciones `PENDIENTE -> RECHAZADO` y `EN_TRAMITE -> RESUELTO`, bloqueo de estados terminales, IDs inexistentes en `cambiar_estado`/`cambiar_prioridad`, prioridad inválida y salida del reporte.
 
 Ejecución:
 
 ```text
 $ python3 -m unittest -v
-Ran 12 tests in 0.002s
+Ran 19 tests in 0.001s
 OK
 ```
 
