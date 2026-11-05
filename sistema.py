@@ -22,6 +22,14 @@ class Estudiante:
     legajo: str
 
 
+# Excepciones personalizadas
+class SolicitudNoEncontradaError(Exception): pass
+class TransicionInvalidaError(Exception): pass
+class EstadoInvalidoError(Exception): pass
+class DatosInvalidosError(Exception): pass
+class SolicitudDuplicadaError(Exception): pass
+
+
 @dataclass(frozen=True)
 class DatosNuevaSolicitud:
     # se agrupan estos datos
@@ -31,11 +39,23 @@ class DatosNuevaSolicitud:
     motivo: str
     prioridad: Prioridad = Prioridad.MEDIA
 
+    def __post_init__(self):
+        # Fail Fast: los datos invalidos no deben llegar al dominio
+        if isinstance(self.id, bool) or not isinstance(self.id, int) or self.id <= 0:
+            raise DatosInvalidosError(f"ID invalido: {self.id!r}")
+        if not isinstance(self.estudiante, Estudiante):
+            raise DatosInvalidosError("El estudiante es obligatorio")
+        self._validar_texto("nombre del estudiante", self.estudiante.nombre)
+        self._validar_texto("legajo del estudiante", self.estudiante.legajo)
+        self._validar_texto("tipo de tramite", self.tipo_tramite)
+        self._validar_texto("motivo", self.motivo)
+        if not isinstance(self.prioridad, Prioridad):
+            raise DatosInvalidosError(f"Prioridad invalida: {self.prioridad!r}")
 
-# Excepciones personalizadas 
-class SolicitudNoEncontradaError(Exception): pass
-class TransicionInvalidaError(Exception): pass
-class EstadoInvalidoError(Exception): pass
+    @staticmethod
+    def _validar_texto(campo: str, valor: str):
+        if not isinstance(valor, str) or not valor.strip():
+            raise DatosInvalidosError(f"El campo {campo} no puede estar vacio")
 
 # 2. Entidad de dominio
 class Solicitud:
@@ -75,6 +95,8 @@ class RepositorioSolicitudes:
         self._solicitudes = []
 
     def agregar(self, solicitud: Solicitud):
+        if any(existente.id == solicitud.id for existente in self._solicitudes):
+            raise SolicitudDuplicadaError(f"Ya existe una solicitud con ID {solicitud.id}")
         self._solicitudes.append(solicitud)
 
     def obtener_por_id(self, id_sol) -> Solicitud:

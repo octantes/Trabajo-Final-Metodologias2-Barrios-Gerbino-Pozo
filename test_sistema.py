@@ -1,11 +1,13 @@
 import unittest
 from sistema import (
+    DatosInvalidosError,
     DatosNuevaSolicitud,
     EstadoInvalidoError,
     EstadoSolicitud,
     Estudiante,
     GestorSolicitudes,
     Prioridad,
+    SolicitudDuplicadaError,
     SolicitudNoEncontradaError,
     TransicionInvalidaError,
 )
@@ -71,6 +73,52 @@ class TestGestorSolicitudes(unittest.TestCase):
         # Verifica que lanzar error al buscar ID falso funcione
         with self.assertRaises(SolicitudNoEncontradaError):
             self.gestor.asignar_responsable(99, "Admin")
+
+    def test_registro_id_duplicado(self):
+        # No deben existir dos solicitudes con el mismo ID
+        datos = DatosNuevaSolicitud(
+            id=1,
+            estudiante=Estudiante("Otra Persona", "99999"),
+            tipo_tramite="Certificado",
+            motivo="Otro motivo",
+        )
+        with self.assertRaises(SolicitudDuplicadaError):
+            self.gestor.registrar_solicitud(datos)
+        self.assertEqual(len(self.gestor.listar_solicitudes()), 1)
+
+    def test_registro_campos_vacios(self):
+        # Los campos obligatorios no pueden quedar vacios
+        with self.assertRaises(DatosInvalidosError):
+            DatosNuevaSolicitud(
+                id=2,
+                estudiante=Estudiante("", "12345"),
+                tipo_tramite="Equivalencia",
+                motivo="Solicito equivalencia",
+            )
+        with self.assertRaises(DatosInvalidosError):
+            DatosNuevaSolicitud(
+                id=3,
+                estudiante=Estudiante("Ana Gomez", "12345"),
+                tipo_tramite="",
+                motivo="Solicito equivalencia",
+            )
+        with self.assertRaises(DatosInvalidosError):
+            DatosNuevaSolicitud(
+                id=4,
+                estudiante=Estudiante("Ana Gomez", "12345"),
+                tipo_tramite="Equivalencia",
+                motivo="   ",
+            )
+
+    def test_registro_id_invalido(self):
+        # El ID debe ser un entero positivo
+        with self.assertRaises(DatosInvalidosError):
+            DatosNuevaSolicitud(
+                id=0,
+                estudiante=Estudiante("Ana Gomez", "12345"),
+                tipo_tramite="Equivalencia",
+                motivo="Solicito equivalencia",
+            )
 
 if __name__ == "__main__":
     unittest.main()
