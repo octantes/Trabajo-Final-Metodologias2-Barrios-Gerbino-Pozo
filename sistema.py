@@ -86,7 +86,7 @@ class Solicitud:
 
     def cambiar_prioridad(self, nueva_prioridad: Prioridad) -> None:
         if not isinstance(nueva_prioridad, Prioridad):
-            raise TypeError("La prioridad debe ser de tipo Prioridad")
+            raise DatosInvalidosError(f"Prioridad invalida: {nueva_prioridad!r}")
         self.prioridad = nueva_prioridad
 
 

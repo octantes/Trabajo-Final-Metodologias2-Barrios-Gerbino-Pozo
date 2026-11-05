@@ -1,4 +1,7 @@
+import io
 import unittest
+from contextlib import redirect_stdout
+
 from sistema import (
     DatosInvalidosError,
     DatosNuevaSolicitud,
@@ -118,6 +121,69 @@ class TestGestorSolicitudes(unittest.TestCase):
                 estudiante=Estudiante("Ana Gomez", "12345"),
                 tipo_tramite="Equivalencia",
                 motivo="Solicito equivalencia",
+            )
+
+    def test_transicion_pendiente_a_rechazado(self):
+        # PENDIENTE tambien puede pasar directamente a RECHAZADO
+        self.gestor.cambiar_estado(1, "RECHAZADO")
+        self.assertEqual(self.gestor.obtener_solicitud(1).estado, EstadoSolicitud.RECHAZADO)
+
+    def test_transicion_en_tramite_a_resuelto(self):
+        # El flujo completo del camino feliz debe llegar a RESUELTO
+        self.gestor.cambiar_estado(1, "EN_TRAMITE")
+        self.gestor.cambiar_estado(1, "RESUELTO")
+        self.assertEqual(self.gestor.obtener_solicitud(1).estado, EstadoSolicitud.RESUELTO)
+
+    def test_estado_terminal_no_permite_transicion(self):
+        # Ni RESUELTO ni RECHAZADO deben volver a un estado anterior
+        self.gestor.cambiar_estado(1, "EN_TRAMITE")
+        self.gestor.cambiar_estado(1, "RESUELTO")
+        with self.assertRaises(TransicionInvalidaError):
+            self.gestor.cambiar_estado(1, "EN_TRAMITE")
+
+        self.gestor.registrar_solicitud(
+            DatosNuevaSolicitud(
+                id=2,
+                estudiante=Estudiante("Juan Perez", "98765"),
+                tipo_tramite="Certificado",
+                motivo="Certificado de alumno regular",
+            )
+        )
+        self.gestor.cambiar_estado(2, "RECHAZADO")
+        with self.assertRaises(TransicionInvalidaError):
+            self.gestor.cambiar_estado(2, "EN_TRAMITE")
+
+    def test_reporte_incluye_solicitudes(self):
+        # El reporte debe mostrar los datos relevantes de cada solicitud
+        salida = io.StringIO()
+        with redirect_stdout(salida):
+            self.gestor.generar_reporte()
+        texto = salida.getvalue()
+        self.assertIn("ID: 1", texto)
+        self.assertIn("Alumno: Ana Gomez", texto)
+        self.assertIn("Estado: PENDIENTE", texto)
+
+    def test_cambiar_estado_id_inexistente(self):
+        # Cambiar el estado de una solicitud inexistente debe fallar explicitamente
+        with self.assertRaises(SolicitudNoEncontradaError):
+            self.gestor.cambiar_estado(99, "EN_TRAMITE")
+
+    def test_cambiar_prioridad_id_inexistente(self):
+        # Cambiar la prioridad de una solicitud inexistente debe fallar explicitamente
+        with self.assertRaises(SolicitudNoEncontradaError):
+            self.gestor.cambiar_prioridad(99, Prioridad.ALTA)
+
+    def test_prioridad_invalida(self):
+        # La prioridad debe ser un valor del Enum, tanto al crear como al modificar
+        with self.assertRaises(DatosInvalidosError):
+            self.gestor.cambiar_prioridad(1, "ALTA")
+        with self.assertRaises(DatosInvalidosError):
+            DatosNuevaSolicitud(
+                id=2,
+                estudiante=Estudiante("Ana Gomez", "12345"),
+                tipo_tramite="Equivalencia",
+                motivo="Solicito equivalencia",
+                prioridad="ALTA",
             )
 
 if __name__ == "__main__":
