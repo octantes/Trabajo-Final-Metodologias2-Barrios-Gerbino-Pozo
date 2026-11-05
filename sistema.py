@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from enum import Enum
 from dataclasses import dataclass
 
@@ -39,7 +40,7 @@ class DatosNuevaSolicitud:
     motivo: str
     prioridad: Prioridad = Prioridad.MEDIA
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         # Fail Fast: los datos invalidos no deben llegar al dominio
         if isinstance(self.id, bool) or not isinstance(self.id, int) or self.id <= 0:
             raise DatosInvalidosError(f"ID invalido: {self.id!r}")
@@ -53,13 +54,13 @@ class DatosNuevaSolicitud:
             raise DatosInvalidosError(f"Prioridad invalida: {self.prioridad!r}")
 
     @staticmethod
-    def _validar_texto(campo: str, valor: str):
+    def _validar_texto(campo: str, valor: str) -> None:
         if not isinstance(valor, str) or not valor.strip():
             raise DatosInvalidosError(f"El campo {campo} no puede estar vacio")
 
 # 2. Entidad de dominio
 class Solicitud:
-    def __init__(self, datos: DatosNuevaSolicitud):
+    def __init__(self, datos: DatosNuevaSolicitud) -> None:
         self.id = datos.id
         self.estudiante = datos.estudiante
         self.tipo = datos.tipo_tramite
@@ -75,7 +76,7 @@ class Solicitud:
             EstadoSolicitud.EN_TRAMITE: [EstadoSolicitud.RESUELTO]
         }
 
-    def cambiar_estado(self, nuevo_estado: EstadoSolicitud):
+    def cambiar_estado(self, nuevo_estado: EstadoSolicitud) -> None:
         if not isinstance(nuevo_estado, EstadoSolicitud):
             raise EstadoInvalidoError(f"Estado invalido: {nuevo_estado!r}")
         if nuevo_estado in self._transiciones_permitidas.get(self.estado, []):
@@ -83,7 +84,7 @@ class Solicitud:
         else:
             raise TransicionInvalidaError(f"Transicion no valida de {self.estado.name} a {nuevo_estado.name}")
 
-    def cambiar_prioridad(self, nueva_prioridad: Prioridad):
+    def cambiar_prioridad(self, nueva_prioridad: Prioridad) -> None:
         if not isinstance(nueva_prioridad, Prioridad):
             raise TypeError("La prioridad debe ser de tipo Prioridad")
         self.prioridad = nueva_prioridad
@@ -91,55 +92,53 @@ class Solicitud:
 
 class RepositorioSolicitudes:
     # se ocupa de guardar y buscar
-    def __init__(self):
-        self._solicitudes = []
+    def __init__(self) -> None:
+        self._solicitudes: list[Solicitud] = []
 
-    def agregar(self, solicitud: Solicitud):
+    def agregar(self, solicitud: Solicitud) -> None:
         if any(existente.id == solicitud.id for existente in self._solicitudes):
             raise SolicitudDuplicadaError(f"Ya existe una solicitud con ID {solicitud.id}")
         self._solicitudes.append(solicitud)
 
-    def obtener_por_id(self, id_sol) -> Solicitud:
+    def obtener_por_id(self, id_solicitud: int) -> Solicitud:
         for solicitud in self._solicitudes:
-            if solicitud.id == id_sol:
+            if solicitud.id == id_solicitud:
                 return solicitud
-        raise SolicitudNoEncontradaError(f"No se encontro la solicitud ID {id_sol}")
+        raise SolicitudNoEncontradaError(f"No se encontro la solicitud ID {id_solicitud}")
 
-    def listar(self):
+    def listar(self) -> tuple[Solicitud, ...]:
         return tuple(self._solicitudes)
 
 
 # 3. Delegación de responsabilidad SRP
 class GeneradorReportes:
     @staticmethod
-    def imprimir_reporte(solicitudes):
+    def imprimir_reporte(solicitudes: Iterable[Solicitud]) -> None:
         print("\n--- REPORTE DE SOLICITUDES ---")
-        for req in solicitudes:
-            print(f"ID: {req.id} | Alumno: {req.estudiante.nombre} | Legajo: {req.estudiante.legajo} | Tramite: {req.tipo} | Prioridad: {req.prioridad.value} | Estado: {req.estado.value} | Resp: {req.responsable}")
+        for solicitud in solicitudes:
+            print(f"ID: {solicitud.id} | Alumno: {solicitud.estudiante.nombre} | Legajo: {solicitud.estudiante.legajo} | Tramite: {solicitud.tipo} | Prioridad: {solicitud.prioridad.value} | Estado: {solicitud.estado.value} | Resp: {solicitud.responsable}")
         print("-----------------------------------------\n")
 
 class GestorSolicitudes:
-    def __init__(self):
+    def __init__(self) -> None:
         self._repositorio = RepositorioSolicitudes()
-    
-    def registrar_solicitud(self, datos: DatosNuevaSolicitud):
+
+    def registrar_solicitud(self, datos: DatosNuevaSolicitud) -> None:
         nueva_solicitud = Solicitud(datos)
         self._repositorio.agregar(nueva_solicitud)
-        return True
 
-    def obtener_solicitud(self, id_sol) -> Solicitud:
-        return self._repositorio.obtener_por_id(id_sol)
+    def obtener_solicitud(self, id_solicitud: int) -> Solicitud:
+        return self._repositorio.obtener_por_id(id_solicitud)
 
-    def listar_solicitudes(self):
+    def listar_solicitudes(self) -> tuple[Solicitud, ...]:
         return self._repositorio.listar()
 
-    def asignar_responsable(self, id_sol, responsable):
-        solicitud = self.obtener_solicitud(id_sol)
+    def asignar_responsable(self, id_solicitud: int, responsable: str) -> None:
+        solicitud = self.obtener_solicitud(id_solicitud)
         solicitud.responsable = responsable
-        print("responsable asignado con exito")
 
-    def cambiar_estado(self, id_sol, estado: EstadoSolicitud | str):
-        solicitud = self.obtener_solicitud(id_sol)
+    def cambiar_estado(self, id_solicitud: int, estado: EstadoSolicitud | str) -> None:
+        solicitud = self.obtener_solicitud(id_solicitud)
         if isinstance(estado, str):
             try:
                 nuevo_estado = EstadoSolicitud(estado)
@@ -151,9 +150,9 @@ class GestorSolicitudes:
             raise EstadoInvalidoError(f"Estado invalido: {estado!r}")
         solicitud.cambiar_estado(nuevo_estado)
 
-    def cambiar_prioridad(self, id_sol, nueva_prioridad: Prioridad):
-        solicitud = self.obtener_solicitud(id_sol)
+    def cambiar_prioridad(self, id_solicitud: int, nueva_prioridad: Prioridad) -> None:
+        solicitud = self.obtener_solicitud(id_solicitud)
         solicitud.cambiar_prioridad(nueva_prioridad)
 
-    def generar_reporte(self):
+    def generar_reporte(self) -> None:
         GeneradorReportes.imprimir_reporte(self.listar_solicitudes())
