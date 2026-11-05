@@ -1,4 +1,4 @@
-from sistema import GestorSolicitudes, Prioridad
+from sistema import DatosNuevaSolicitud, Estudiante, GestorSolicitudes, Prioridad
 
 if __name__ == "__main__":
 
@@ -6,8 +6,22 @@ if __name__ == "__main__":
     gestor = GestorSolicitudes()
 
     # 2 - registramos solicitud nueva 
-    gestor.registrar_solicitud(1, "Ana Gomez", "12345", "Equivalencia", "Solicito equivalencia de Matematica")
-    gestor.registrar_solicitud(2, "Juan Perez", "98765", "Certificado", "Certificado de alumno regular")
+    gestor.registrar_solicitud(
+        DatosNuevaSolicitud(
+            id=1,
+            estudiante=Estudiante("Ana Gomez", "12345"),
+            tipo_tramite="Equivalencia",
+            motivo="Solicito equivalencia de Matematica",
+        )
+    )
+    gestor.registrar_solicitud(
+        DatosNuevaSolicitud(
+            id=2,
+            estudiante=Estudiante("Juan Perez", "98765"),
+            tipo_tramite="Certificado",
+            motivo="Certificado de alumno regular",
+        )
+    )
 
     # 3 - asignamos responsables 
     gestor.asignar_responsable(1, "Secretaria Academica")

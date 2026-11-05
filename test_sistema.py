@@ -1,11 +1,18 @@
 import unittest
-from sistema import GestorSolicitudes, EstadoSolicitud, Prioridad, SolicitudNoEncontradaError, TransicionInvalidaError
+from sistema import DatosNuevaSolicitud, Estudiante, GestorSolicitudes, EstadoSolicitud, Prioridad, SolicitudNoEncontradaError, TransicionInvalidaError
 
 class TestGestorSolicitudes(unittest.TestCase):
     def setUp(self):
         # Se ejecuta antes de cada test para tener un entorno limpio
         self.gestor = GestorSolicitudes()
-        self.gestor.registrar_solicitud(1, "Ana Gomez", "12345", "Equivalencia", "Solicito equivalencia")
+        self.gestor.registrar_solicitud(
+            DatosNuevaSolicitud(
+                id=1,
+                estudiante=Estudiante("Ana Gomez", "12345"),
+                tipo_tramite="Equivalencia",
+                motivo="Solicito equivalencia",
+            )
+        )
 
     def test_registro_exitoso(self):
         # Verifica que la solicitud se haya guardado y tenga estado PENDIENTE

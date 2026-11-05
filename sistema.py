@@ -22,20 +22,30 @@ class Estudiante:
     legajo: str
 
 
+@dataclass(frozen=True)
+class DatosNuevaSolicitud:
+    # se agrupan estos datos
+    id: int
+    estudiante: Estudiante
+    tipo_tramite: str
+    motivo: str
+    prioridad: Prioridad = Prioridad.MEDIA
+
+
 # Excepciones personalizadas 
 class SolicitudNoEncontradaError(Exception): pass
 class TransicionInvalidaError(Exception): pass
 
 # 2. Entidad de dominio
 class Solicitud:
-    def __init__(self, id_sol, estudiante, tipo_tramite, motivo):
-        self.id = id_sol
-        self.estudiante = estudiante
-        self.tipo = tipo_tramite
-        self.motivo = motivo
+    def __init__(self, datos: DatosNuevaSolicitud):
+        self.id = datos.id
+        self.estudiante = datos.estudiante
+        self.tipo = datos.tipo_tramite
+        self.motivo = datos.motivo
         self.estado = EstadoSolicitud.PENDIENTE
         # se suma este dato
-        self.prioridad = Prioridad.MEDIA
+        self.prioridad = datos.prioridad
         self.responsable = ""
 
         # OCP: Mapa de transiciones permitidas
@@ -68,9 +78,8 @@ class GestorSolicitudes:
     def __init__(self):
         self.solicitudes = []
     
-    def registrar_solicitud(self, id_sol, nombre_estudiante, legajo, tipo_tramite, motivo):
-        estudiante = Estudiante(nombre_estudiante, legajo)
-        nueva_solicitud = Solicitud(id_sol, estudiante, tipo_tramite, motivo)
+    def registrar_solicitud(self, datos: DatosNuevaSolicitud):
+        nueva_solicitud = Solicitud(datos)
         self.solicitudes.append(nueva_solicitud)
         return True
 
