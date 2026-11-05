@@ -65,6 +65,25 @@ class Solicitud:
             raise TypeError("La prioridad debe ser de tipo Prioridad")
         self.prioridad = nueva_prioridad
 
+
+class RepositorioSolicitudes:
+    # se ocupa de guardar y buscar
+    def __init__(self):
+        self._solicitudes = []
+
+    def agregar(self, solicitud: Solicitud):
+        self._solicitudes.append(solicitud)
+
+    def obtener_por_id(self, id_sol) -> Solicitud:
+        for solicitud in self._solicitudes:
+            if solicitud.id == id_sol:
+                return solicitud
+        raise SolicitudNoEncontradaError(f"No se encontro la solicitud ID {id_sol}")
+
+    def listar(self):
+        return tuple(self._solicitudes)
+
+
 # 3. Delegación de responsabilidad SRP
 class GeneradorReportes:
     @staticmethod
@@ -76,27 +95,26 @@ class GeneradorReportes:
 
 class GestorSolicitudes:
     def __init__(self):
-        self.solicitudes = []
+        self._repositorio = RepositorioSolicitudes()
     
     def registrar_solicitud(self, datos: DatosNuevaSolicitud):
         nueva_solicitud = Solicitud(datos)
-        self.solicitudes.append(nueva_solicitud)
+        self._repositorio.agregar(nueva_solicitud)
         return True
 
-    # 4. Extract method 
-    def _buscar_por_id(self, id_sol) -> Solicitud:
-        for req in self.solicitudes:
-            if req.id == id_sol:
-                return req
-        raise SolicitudNoEncontradaError(f"No se encontro la solicitud ID {id_sol}")
+    def obtener_solicitud(self, id_sol) -> Solicitud:
+        return self._repositorio.obtener_por_id(id_sol)
+
+    def listar_solicitudes(self):
+        return self._repositorio.listar()
 
     def asignar_responsable(self, id_sol, responsable):
-        solicitud = self._buscar_por_id(id_sol)
+        solicitud = self.obtener_solicitud(id_sol)
         solicitud.responsable = responsable
         print("responsable asignado con exito")
 
     def cambiar_estado(self, id_sol, estado_str):
-        solicitud = self._buscar_por_id(id_sol)
+        solicitud = self.obtener_solicitud(id_sol)
         try:
             nuevo_estado = EstadoSolicitud(estado_str)
             solicitud.cambiar_estado(nuevo_estado)
@@ -106,8 +124,8 @@ class GestorSolicitudes:
             return False
 
     def cambiar_prioridad(self, id_sol, nueva_prioridad: Prioridad):
-        solicitud = self._buscar_por_id(id_sol)
+        solicitud = self.obtener_solicitud(id_sol)
         solicitud.cambiar_prioridad(nueva_prioridad)
 
     def generar_reporte(self):
-        GeneradorReportes.imprimir_reporte(self.solicitudes)
+        GeneradorReportes.imprimir_reporte(self.listar_solicitudes())

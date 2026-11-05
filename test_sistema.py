@@ -16,7 +16,7 @@ class TestGestorSolicitudes(unittest.TestCase):
 
     def test_registro_exitoso(self):
         # Verifica que la solicitud se haya guardado y tenga estado PENDIENTE
-        solicitud = self.gestor.solicitudes[0]
+        solicitud = self.gestor.obtener_solicitud(1)
         self.assertEqual(solicitud.id, 1)
         self.assertEqual(solicitud.estado, EstadoSolicitud.PENDIENTE)
         self.assertEqual(solicitud.estudiante.nombre, "Ana Gomez")
@@ -25,23 +25,23 @@ class TestGestorSolicitudes(unittest.TestCase):
     def test_asignacion_responsable(self):
         # Verifica la asignación de responsable
         self.gestor.asignar_responsable(1, "Secretaria Academica")
-        self.assertEqual(self.gestor.solicitudes[0].responsable, "Secretaria Academica")
+        self.assertEqual(self.gestor.obtener_solicitud(1).responsable, "Secretaria Academica")
 
     def test_cambiar_prioridad(self):
-        self.assertEqual(self.gestor.solicitudes[0].prioridad, Prioridad.MEDIA)
+        self.assertEqual(self.gestor.obtener_solicitud(1).prioridad, Prioridad.MEDIA)
         self.gestor.cambiar_prioridad(1, Prioridad.ALTA)
-        self.assertEqual(self.gestor.solicitudes[0].prioridad, Prioridad.ALTA)
+        self.assertEqual(self.gestor.obtener_solicitud(1).prioridad, Prioridad.ALTA)
 
     def test_transicion_estado_valida(self):
         # Verifica el camino feliz de cambio de estado
         self.gestor.cambiar_estado(1, "EN_TRAMITE")
-        self.assertEqual(self.gestor.solicitudes[0].estado, EstadoSolicitud.EN_TRAMITE)
+        self.assertEqual(self.gestor.obtener_solicitud(1).estado, EstadoSolicitud.EN_TRAMITE)
 
     def test_transicion_estado_invalida(self):
         # Verifica que el sistema aborte si se salta un estado (Fail Fast / OCP)
         with self.assertRaises(TransicionInvalidaError):
             # No se puede pasar de PENDIENTE a RESUELTO directamente
-            self.gestor.solicitudes[0].cambiar_estado(EstadoSolicitud.RESUELTO)
+            self.gestor.cambiar_estado(1, "RESUELTO")
 
     def test_buscar_id_inexistente(self):
         # Verifica que lanzar error al buscar ID falso funcione
